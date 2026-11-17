@@ -3,8 +3,8 @@ codigo_icao, indicativo y activa.
 
 Uso (desde la raíz del proyecto, donde está la carpeta data/):
     pip install pymysql cryptography
-    python cargar_aerolinea.py --user root                    # pide la contraseña
-    python cargar_aerolinea.py --user root --crear-columnas   # crea las columnas si faltan
+    python scripts/cargar_aerolinea.py --user root                    # pide la contraseña
+    python scripts/cargar_aerolinea.py --user root --crear-columnas   # crea las columnas si faltan
 
 Qué hace:
   - NO vacía ni recarga nada: hace UPDATE por clave primaria sobre las filas que ya están en la tabla,

@@ -2,8 +2,8 @@
 generar_puertas_sinteticas.py  --  rellena id_puerta de vuelo.csv con puertas SINTETICAS sin solapes
 
 Ejecutar DESPUES de generar_vuelo.py y ANTES de los demas generar_*.py y del cargador:
-    python generar_puertas_sinteticas.py            # usa ./data y ./raw_data
-    python generar_puertas_sinteticas.py <carpeta>  # raiz del proyecto en otra ruta
+    python scripts/generar_puertas_sinteticas.py            # usa ./data y ./raw_data
+    python scripts/generar_puertas_sinteticas.py <carpeta>  # raiz del proyecto en otra ruta
 
 Que hace
     1. Para cada aeropuerto de ORIGEN con vuelos, calcula cuantas puertas hacen falta a la vez (pico de

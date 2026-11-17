@@ -2,8 +2,8 @@
 generar_vuelo.py  --  BTS On-Time Performance -> data/vuelo.csv
 
 Uso (desde la raiz del proyecto):
-    python generar_vuelo.py            # usa ./raw_data y ./data
-    python generar_vuelo.py <carpeta>  # raiz del proyecto en otra ruta
+    python scripts/generar_vuelo.py            # usa ./raw_data y ./data
+    python scripts/generar_vuelo.py <carpeta>  # raiz del proyecto en otra ruta
 
 Entrada
     raw_data/bts*.csv              uno o varios meses del BTS (se concatenan)

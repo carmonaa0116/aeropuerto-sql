@@ -249,7 +249,7 @@ CREATE TABLE mantenimiento (
 CREATE TABLE incidencia (
 	id_incidencia INT PRIMARY KEY NOT NULL auto_increment,
     id_vuelo INT NOT NULL,
-    tipo VARCHAR(50) NOT NULL,id_aerolinea
+    tipo VARCHAR(50) NOT NULL,
     gravedad ENUM('baja','media','alta','critica') NOT NULL,
     descripcion TEXT,
     fecha_hora DATETIME NOT NULL,

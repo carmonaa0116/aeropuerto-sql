@@ -1,7 +1,7 @@
 """Recalcula distancia_km de data/ruta.csv con la fórmula de Haversine (R = 6371 km) a partir de las
 coordenadas de data/aeropuerto.csv. distancia_km = max(1, round(Haversine)).
 
-Uso (desde la raíz del proyecto):   python corregir_distancia_ruta.py
+Uso (desde la raíz del proyecto):   python scripts/corregir_distancia_ruta.py
 Guarda una copia del CSV anterior en raw_data/ruta_antes_distancias.csv (solo la primera vez).
 Orden correcto: este script puede ejecutarse en cualquier momento, no cambia ids ni filas; pero hay que
 regenerar reserva/billete (precio = base + tarifa_km x distancia) y recargar con importacion.py --reiniciar.

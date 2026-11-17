@@ -2,8 +2,8 @@
 
 Uso (desde la raíz del proyecto, donde está la carpeta data/):
     pip install pymysql cryptography
-    python cargar_mysql.py --user root                 # pide la contraseña
-    python cargar_mysql.py --user root --reiniciar     # vacía las tablas (TRUNCATE) antes de cargar
+    python scripts/importacion.py --user root                 # pide la contraseña
+    python scripts/importacion.py --user root --reiniciar     # vacía las tablas (TRUNCATE) antes de cargar
 
 Qué hace:
   - Recorre las 21 tablas en el orden de las claves foráneas y salta las que no tengan CSV todavía.
