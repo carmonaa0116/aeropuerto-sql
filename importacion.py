@@ -62,7 +62,7 @@ def construir_sql(tabla, ruta_csv, cabecera, columnas_tabla, fin_linea):
             omitidas.append(col)
         else:
             variables.append(f"@c_{destino}")
-            sets.append(f"`{destino}` = NULLIF(@c_{destino}, '')")  # celda vacía -> NULL
+            sets.append(f"`{destino}` = NULLIF(NULLIF(@c_{destino}, ''), '\\\\N')")  # vacío o \N -> NULL
     ruta_sql = ruta_csv.resolve().as_posix().replace("'", "''")
     sql = (
         f"LOAD DATA LOCAL INFILE '{ruta_sql}' INTO TABLE `{tabla}`\n"

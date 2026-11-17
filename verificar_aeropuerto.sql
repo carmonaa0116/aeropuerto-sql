@@ -1,7 +1,7 @@
 -- =====================================================================
 -- VERIFICACIÓN DE LA BASE aeropuerto (MySQL 8)
--- Ejecútalo entero (Workbench: Ctrl+Shift+Enter). Tarda unos minutos por los JOIN sobre ~600k filas.
--- IMPORTANTE en Workbench: Edit > Preferences > SQL Editor > 'DBMS connection read timeout' = 600 (por defecto 30 s
+-- Ejecútalo entero (Workbench: Ctrl+Shift+Enter). Tarda varios minutos por los JOIN sobre ~2 millones de filas (evento_vuelo, tripulacion_vuelo).
+-- IMPORTANTE en Workbench: Edit > Preferences > SQL Editor > 'DBMS connection read timeout' = 1800 (por defecto 30 s
 -- y corta las consultas largas con el error 2013 'Lost connection'). Reconecta después de cambiarlo.
 -- Al final salen 3 resultados: resumen, solo lo que falla/revisar, y el detalle completo.
 -- Los resultados quedan guardados: para volver a verlos sin repetir los cálculos, ejecuta solo los 3 SELECT del final.
@@ -33,46 +33,51 @@ CREATE TABLE aeropuerto_verif.verificacion (
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
 SELECT '1 estructura', 'tablas', 'igual', 21, COUNT(*) FROM information_schema.TABLES
  WHERE TABLE_SCHEMA = 'aeropuerto' AND TABLE_TYPE = 'BASE TABLE' UNION ALL
-SELECT '1 estructura', 'claves foráneas', 'igual', 26, COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS
+SELECT '1 estructura', 'claves foráneas (27 con la FK de evento_vuelo)', 'igual', 27, COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS
  WHERE CONSTRAINT_SCHEMA = 'aeropuerto' UNION ALL
-SELECT '1 estructura', 'restricciones CHECK', 'igual', 9, COUNT(*) FROM information_schema.CHECK_CONSTRAINTS
+SELECT '1 estructura', 'restricciones CHECK (10 con chk_aerolinea_activa)', 'igual', 10, COUNT(*) FROM information_schema.CHECK_CONSTRAINTS
  WHERE CONSTRAINT_SCHEMA = 'aeropuerto' UNION ALL
-SELECT '1 estructura', 'particiones de evento_vuelo (4 si usas el DDL original con PARTITION)', 'info', NULL, COUNT(PARTITION_NAME)
-  FROM information_schema.PARTITIONS WHERE TABLE_SCHEMA = 'aeropuerto' AND TABLE_NAME = 'evento_vuelo';
+SELECT '1 estructura', 'particiones de evento_vuelo (0 = tabla normal, sin PARTITION)', 'igual', 0, COUNT(PARTITION_NAME)
+  FROM information_schema.PARTITIONS WHERE TABLE_SCHEMA = 'aeropuerto' AND TABLE_NAME = 'evento_vuelo' UNION ALL
+SELECT '1 estructura', 'PK de evento_vuelo = solo id_evento (1 = sí)', 'igual', 1, COUNT(*) = 1 AND MIN(COLUMN_NAME) = 'id_evento'
+  FROM information_schema.STATISTICS
+ WHERE TABLE_SCHEMA = 'aeropuerto' AND TABLE_NAME = 'evento_vuelo' AND INDEX_NAME = 'PRIMARY' UNION ALL
+SELECT '1 estructura', 'FK de evento_vuelo hacia vuelo', 'igual', 1, COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS
+ WHERE CONSTRAINT_SCHEMA = 'aeropuerto' AND TABLE_NAME = 'evento_vuelo' AND REFERENCED_TABLE_NAME = 'vuelo' UNION ALL
+SELECT '1 estructura', 'columnas nuevas de aerolinea (codigo_icao, indicativo, activa)', 'igual', 3, COUNT(*) FROM information_schema.COLUMNS
+ WHERE TABLE_SCHEMA = 'aeropuerto' AND TABLE_NAME = 'aerolinea' AND COLUMN_NAME IN ('codigo_icao', 'indicativo', 'activa');
 
 -- =====================================================================
--- 2. CONTEOS (esperados = los de tu carga; ruta ya con el CSV corregido)
+-- 2. CONTEOS (esperados = los de la carga del 17-11-2026 con el BTS de enero 2026)
 -- =====================================================================
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
 SELECT '2 conteos', 'pais', 'igual', 240, COUNT(*) FROM pais UNION ALL
 SELECT '2 conteos', 'aeropuerto', 'igual', 5906, COUNT(*) FROM aeropuerto UNION ALL
 SELECT '2 conteos', 'aerolinea', 'igual', 1245, COUNT(*) FROM aerolinea UNION ALL
-SELECT '2 conteos', 'modelo_aeronave', 'igual', 15, COUNT(*) FROM modelo_aeronave UNION ALL
+SELECT '2 conteos', 'modelo_aeronave', 'igual', 33, COUNT(*) FROM modelo_aeronave UNION ALL
 SELECT '2 conteos', 'clase_cabina', 'igual', 4, COUNT(*) FROM clase_cabina UNION ALL
-SELECT '2 conteos', 'aeronave', 'igual', 17143, COUNT(*) FROM aeronave UNION ALL
-SELECT '2 conteos', 'terminal', 'igual', 312, COUNT(*) FROM terminal UNION ALL
+SELECT '2 conteos', 'aeronave', 'igual', 24063, COUNT(*) FROM aeronave UNION ALL
+SELECT '2 conteos', 'terminal', 'igual', 582, COUNT(*) FROM terminal UNION ALL
 SELECT '2 conteos', 'pista', 'igual', 7276, COUNT(*) FROM pista UNION ALL
-SELECT '2 conteos', 'ruta', 'igual', 36127, COUNT(*) FROM ruta UNION ALL
-SELECT '2 conteos', 'puerta_embarque', 'igual', 233, COUNT(*) FROM puerta_embarque UNION ALL
-SELECT '2 conteos', 'vuelo', 'igual', 114892, COUNT(*) FROM vuelo UNION ALL
-SELECT '2 conteos', 'evento_vuelo', 'igual', 594957, COUNT(*) FROM evento_vuelo UNION ALL
-SELECT '2 conteos', 'empleado', 'igual', 19665, COUNT(*) FROM empleado UNION ALL
-SELECT '2 conteos', 'tripulacion_vuelo', 'igual', 629145, COUNT(*) FROM tripulacion_vuelo UNION ALL
+SELECT '2 conteos', 'ruta', 'igual', 37806, COUNT(*) FROM ruta UNION ALL
+SELECT '2 conteos', 'puerta_embarque', 'igual', 3470, COUNT(*) FROM puerta_embarque UNION ALL
+SELECT '2 conteos', 'vuelo', 'igual', 355006, COUNT(*) FROM vuelo UNION ALL
+SELECT '2 conteos', 'evento_vuelo', 'igual', 1789348, COUNT(*) FROM evento_vuelo UNION ALL
+SELECT '2 conteos', 'empleado', 'igual', 92828, COUNT(*) FROM empleado UNION ALL
+SELECT '2 conteos', 'tripulacion_vuelo', 'igual', 1927914, COUNT(*) FROM tripulacion_vuelo UNION ALL
 SELECT '2 conteos', 'pasajero', 'igual', 100000, COUNT(*) FROM pasajero UNION ALL
-SELECT '2 conteos', 'reserva', 'igual', 375557, COUNT(*) FROM reserva UNION ALL
-SELECT '2 conteos', 'billete', 'igual', 664853, COUNT(*) FROM billete UNION ALL
-SELECT '2 conteos', 'tarjeta_embarque', 'igual', 589071, COUNT(*) FROM tarjeta_embarque UNION ALL
-SELECT '2 conteos', 'equipaje', 'igual', 335035, COUNT(*) FROM equipaje UNION ALL
-SELECT '2 conteos', 'mantenimiento', 'igual', 12273, COUNT(*) FROM mantenimiento UNION ALL
-SELECT '2 conteos', 'incidencia', 'igual', 12319, COUNT(*) FROM incidencia;
+SELECT '2 conteos', 'reserva', 'igual', 383318, COUNT(*) FROM reserva UNION ALL
+SELECT '2 conteos', 'billete', 'igual', 678760, COUNT(*) FROM billete UNION ALL
+SELECT '2 conteos', 'tarjeta_embarque', 'igual', 583797, COUNT(*) FROM tarjeta_embarque UNION ALL
+SELECT '2 conteos', 'equipaje', 'igual', 333205, COUNT(*) FROM equipaje UNION ALL
+SELECT '2 conteos', 'mantenimiento', 'igual', 4944, COUNT(*) FROM mantenimiento UNION ALL
+SELECT '2 conteos', 'incidencia', 'igual', 42008, COUNT(*) FROM incidencia;
 
 -- =====================================================================
 -- 3. INTEGRIDAD Y DUPLICADOS
 --    (PK, UNIQUE y FK ya las garantiza InnoDB; aquí solo lo que MySQL no vigila)
 -- =====================================================================
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
-SELECT '3 integridad', 'evento_vuelo con id_vuelo inexistente (no tiene FK)', 'cero', 0, COUNT(*)
-  FROM evento_vuelo e LEFT JOIN vuelo v ON v.id_vuelo = e.id_vuelo WHERE v.id_vuelo IS NULL UNION ALL
 SELECT '3 integridad', 'evento_vuelo duplicado (mismo vuelo y tipo)', 'cero', 0, COUNT(*)
   FROM (SELECT id_vuelo, tipo_evento FROM evento_vuelo GROUP BY id_vuelo, tipo_evento HAVING COUNT(*) > 1) x;
 
@@ -82,7 +87,7 @@ SELECT '3 integridad', 'evento_vuelo duplicado (mismo vuelo y tipo)', 'cero', 0,
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
 SELECT '4 maestros', 'aeropuerto con latitud/longitud fuera de rango', 'cero', 0, COUNT(*)
   FROM aeropuerto WHERE latitud NOT BETWEEN -90 AND 90 OR longitud NOT BETWEEN -180 AND 180 UNION ALL
-SELECT '4 maestros', 'aeropuerto con IATA/ICAO mal formado', 'cero', 0, COUNT(*)
+SELECT '4 maestros', 'aeropuerto con IATA/ICAO mal formado (1 viene así de OpenFlights: Dunnville, DU9)', 'max', 1, COUNT(*)
   FROM aeropuerto WHERE codigo_iata COLLATE utf8mb4_0900_as_cs NOT REGEXP '^[A-Z]{3}$'
                      OR codigo_icao COLLATE utf8mb4_0900_as_cs NOT REGEXP '^[A-Z0-9]{4}$' UNION ALL
 SELECT '4 maestros', 'aeropuerto sin zona horaria', 'info', NULL, COUNT(*) FROM aeropuerto WHERE zona_horaria IS NULL UNION ALL
@@ -96,6 +101,21 @@ SELECT '4 maestros', 'ruta con distancia distinta a la real entre aeropuertos (>
  WHERE ABS(r.distancia_km - ST_Distance_Sphere(POINT(o.longitud, o.latitud), POINT(d.longitud, d.latitud)) / 1000) > 2 UNION ALL
 SELECT '4 maestros', 'distancia media de ruta (km)', 'info', NULL, ROUND(AVG(distancia_km)) FROM ruta;
 
+INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
+SELECT '4 maestros', 'aerolinea con activa fuera de 0/1', 'cero', 0, COUNT(*) FROM aerolinea WHERE activa NOT IN (0, 1) UNION ALL
+SELECT '4 maestros', 'aerolinea con ICAO mal formado (3 caracteres)', 'max', 0, COUNT(*)
+  FROM aerolinea WHERE codigo_icao IS NOT NULL AND codigo_icao COLLATE utf8mb4_0900_as_cs NOT REGEXP '^[A-Z0-9]{3}$' UNION ALL
+SELECT '4 maestros', 'aerolíneas activas', 'info', NULL, COUNT(*) FROM aerolinea WHERE activa = 1 UNION ALL
+SELECT '4 maestros', 'aerolíneas con al menos un vuelo', 'info', NULL, COUNT(DISTINCT a.id_aerolinea)
+  FROM vuelo v JOIN aeronave a ON a.id_aeronave = v.id_aeronave UNION ALL
+SELECT '4 maestros', 'vuelos de aerolíneas marcadas como inactivas', 'info', NULL, COUNT(*)
+  FROM vuelo v JOIN aeronave a ON a.id_aeronave = v.id_aeronave JOIN aerolinea l ON l.id_aerolinea = a.id_aerolinea
+ WHERE l.activa = 0 UNION ALL
+SELECT '4 maestros', 'modelos de aeronave sin ninguna aeronave', 'max', 0, COUNT(*)
+  FROM modelo_aeronave m WHERE NOT EXISTS (SELECT 1 FROM aeronave a WHERE a.id_modelo = m.id_modelo) UNION ALL
+SELECT '4 maestros', '% de aeronaves con al menos un vuelo', 'info', NULL,
+       ROUND(100 * SUM(EXISTS (SELECT 1 FROM vuelo v WHERE v.id_aeronave = a.id_aeronave)) / COUNT(*), 1) FROM aeronave a;
+
 -- =====================================================================
 -- 5. VUELOS
 -- =====================================================================
@@ -108,18 +128,28 @@ SELECT '5 vuelo', 'no cancelado sin horas reales', 'cero', 0, COUNT(*)
   FROM vuelo WHERE estado <> 'cancelado' AND (salida_real IS NULL OR llegada_real IS NULL);
 
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
-SELECT '5 vuelo', 'estado retrasado/aterrizado incoherente con el retraso de llegada (15 min)', 'cero', 0, COUNT(*)
-  FROM vuelo WHERE (estado = 'retrasado' AND TIMESTAMPDIFF(MINUTE, llegada_prevista, llegada_real) < 15)
-                OR (estado = 'aterrizado' AND TIMESTAMPDIFF(MINUTE, llegada_prevista, llegada_real) >= 15);
+SELECT '5 vuelo', 'estado retrasado/aterrizado incoherente con el retraso de salida (15 min)', 'cero', 0, COUNT(*)
+  FROM vuelo WHERE (estado = 'retrasado' AND TIMESTAMPDIFF(MINUTE, salida_prevista, salida_real) < 15)
+                OR (estado = 'aterrizado' AND TIMESTAMPDIFF(MINUTE, salida_prevista, salida_real) >= 15);
 
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
 SELECT '5 vuelo', 'llegada real anterior a salida real', 'max', 0, COUNT(*) FROM vuelo WHERE llegada_real <= salida_real;
 
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
-SELECT '5 vuelo', 'vuelos cuyo origen no es EWR/JFK/LGA', 'cero', 0, COUNT(*)
+SELECT '5 vuelo', 'vuelos con origen fuera de EE. UU. (BTS: solo territorios PR, GU, VI... es normal)', 'info', NULL, COUNT(*)
   FROM vuelo v JOIN ruta r ON r.id_ruta = v.id_ruta
   JOIN aeropuerto a ON a.id_aeropuerto = r.id_aeropuerto_origen
- WHERE a.codigo_iata NOT IN ('EWR', 'JFK', 'LGA');
+  JOIN pais p ON p.id_pais = a.id_pais
+ WHERE p.codigo_iso <> 'US';
+
+INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
+SELECT '5 vuelo', 'fechas de vuelo anteriores a 2000 (fecha cero por una carga mal leída)', 'cero', 0, COUNT(*)
+  FROM vuelo WHERE salida_prevista < '2000-01-01' OR llegada_prevista < '2000-01-01'
+                OR salida_real < '2000-01-01' OR llegada_real < '2000-01-01';
+
+INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
+SELECT '5 vuelo', '% de vuelos cancelados (BTS enero 2026: ~4)', 'info', NULL, ROUND(100 * SUM(estado = 'cancelado') / COUNT(*), 1) FROM vuelo UNION ALL
+SELECT '5 vuelo', 'días entre el primer y el último vuelo', 'info', NULL, DATEDIFF(MAX(salida_prevista), MIN(salida_prevista)) FROM vuelo;
 
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
 SELECT '5 vuelo', 'numero_vuelo no empieza por el IATA de la aerolínea de la aeronave', 'cero', 0, COUNT(*)
@@ -148,7 +178,7 @@ SELECT '5 vuelo', 'misma puerta con salidas a menos de 45 min', 'cero', 0, COUNT
  WHERE TIMESTAMPDIFF(MINUTE, anterior, salida_prevista) < 45;
 
 INSERT INTO aeropuerto_verif.verificacion (seccion, comprobacion, regla, esperado, valor)
-SELECT '5 vuelo', 'misma aeronave en dos vuelos solapados (horas reales)', 'max', 0, COUNT(*)
+SELECT '5 vuelo', 'misma aeronave en dos vuelos solapados (horas reales del BTS; algo de ruido es normal)', 'max', 0, COUNT(*)
   FROM (SELECT COALESCE(salida_real, salida_prevista) AS salida,
                LAG(COALESCE(llegada_real, llegada_prevista)) OVER (PARTITION BY id_aeronave ORDER BY salida_prevista) AS fin_anterior
           FROM vuelo WHERE estado <> 'cancelado') x

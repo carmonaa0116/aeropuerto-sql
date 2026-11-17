@@ -25,12 +25,17 @@ CREATE TABLE aeropuerto (
 );
 
 CREATE TABLE aerolinea (
-	id_aerolinea INT PRIMARY KEY auto_increment,
-    codigo_iata CHAR(2) UNIQUE KEY NOT NULL,
-    nombre VARCHAR(50) NOT NULL,
-    id_pais INT NOT NULL,
+    id_aerolinea INT PRIMARY KEY AUTO_INCREMENT,
+    codigo_iata  CHAR(2) NOT NULL,
+    nombre       VARCHAR(50) NOT NULL,
+    codigo_icao  CHAR(3) NULL,
+    indicativo   VARCHAR(50) NULL,
+    id_pais      INT NOT NULL,
+    activa       TINYINT(1) NOT NULL DEFAULT 1,
 
-    FOREIGN KEY (id_pais) REFERENCES pais(id_pais)
+    CONSTRAINT uq_aerolinea_iata UNIQUE (codigo_iata),
+    CONSTRAINT chk_aerolinea_activa CHECK (activa IN (0, 1)),
+    CONSTRAINT fk_aerolinea_pais FOREIGN KEY (id_pais) REFERENCES pais(id_pais)
 );
 
 CREATE TABLE modelo_aeronave (
@@ -134,8 +139,9 @@ CREATE TABLE evento_vuelo (
     tipo_evento VARCHAR(30) NOT NULL,
     fecha_hora DATETIME NOT NULL,
 
-    PRIMARY KEY (id_evento, fecha_hora),
-    INDEX idx_evento_vuelo (id_vuelo, fecha_hora)
+    PRIMARY KEY (id_evento),
+    INDEX idx_evento_vuelo (id_vuelo, fecha_hora),
+    CONSTRAINT fk_evento_vuelo_vuelo FOREIGN KEY (id_vuelo) REFERENCES vuelo (id_vuelo)
 );
 
 -- PERSONAL
