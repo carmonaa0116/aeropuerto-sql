@@ -20,6 +20,9 @@ aviación (**355.006 vuelos**) y con integridad reforzada con triggers.
   (`sql/verificar_aeropuerto.sql`); la última ejecución dio 0 fallos.
 - **ETL en Python**: scripts reproducibles que transforman las fuentes a
   CSV con las columnas exactas de cada tabla y los cargan en lote.
+- **App web local** (`app/`): las consultas Q01–Q10 ejecutadas en vivo contra
+  MySQL, cada una con su gráfica, la tabla de resultados, el tiempo de
+  ejecución y el SQL exacto (en desarrollo, ver "App web").
 
 ## Datos
 
@@ -42,6 +45,7 @@ Cifras cargadas: 355.006 vuelos, 1,79 M eventos, 100.000 pasajeros,
 sql/        DDL, triggers, tests, verificación, consultas e índices
 scripts/    ETL en Python (se ejecutan desde la raíz del proyecto)
 docs/       modelo de Workbench y análisis de rendimiento
+app/        app web local (React + Express) conectada a MySQL
 limpieza.ipynb   generación de catálogos y datos sintéticos
 data/, raw_data/ (no se suben a GitHub; ver "Reproducir")
 ```
@@ -86,6 +90,24 @@ Workbench o cliente `mysql` con `local_infile` activado.
    (si ya había triggers, ejecuta antes `sql/00_quitar_triggers.sql`).
 5. Verifica con `sql/verificar_aeropuerto.sql` e instala los triggers con
    `sql/01`, `02` y `03`.
+
+## App web
+
+App local para enseñar el SQL del proyecto, en `app/`. Instrucciones de
+arranque en [`app/README.md`](app/README.md).
+
+- **Stack**: React 18 + TypeScript + Recharts (frontend) y Express +
+  `mysql2` + `zod` (API, solo en `127.0.0.1`).
+- **Seguridad**: usuarios MySQL con permisos mínimos (`app_ro` solo lectura,
+  `app_rw` escritura limitada), consultas fijas y parametrizadas, nunca SQL
+  desde el navegador.
+- **Consultas Q01–Q10**: copias literales de `sql/04_consultas_avanzadas.sql`
+  con los valores como parámetros; un test comprueba que son idénticas al
+  original. Límite de tiempo por consulta, caché y cancelación (`KILL QUERY`).
+- **Estado**: fase 1 de 7 terminada (consultas con gráfica, tabla, SQL y
+  tiempo; 34 tests en verde en MySQL 8). Próximas fases: página de proyecto,
+  calidad de datos, rendimiento, modelo ER, demo de triggers en vivo,
+  explorador de tablas, CRUD y asistente de creación de vuelos.
 
 ## Limitaciones conocidas
 
