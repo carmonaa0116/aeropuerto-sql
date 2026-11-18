@@ -59,3 +59,4 @@ CREATE INDEX idx_billete_pasajero_estado
 -- DROP INDEX idx_billete_vuelo_estado ON billete;
 -- (idx_billete_pasajero_estado: antes crear un índice simple sobre
 --  id_pasajero, porque lo usa la FK; después borrarlo)
+CREATE INDEX idx_billete_vuelo_estado ON billete (id_vuelo, estado);

@@ -1,0 +1,21 @@
+{
+  "name": "aeropuerto-app",
+  "private": true,
+  "description": "App web local para explorar la base de datos MySQL 8 'aeropuerto'",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c blue,green \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run typecheck -w backend && npm run build -w frontend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "test": "npm test -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
