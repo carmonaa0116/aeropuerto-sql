@@ -31,11 +31,16 @@ export async function getJson<T>(ruta: string, signal?: AbortSignal): Promise<T>
   return cuerpo as T;
 }
 
-/** POST sin cuerpo (acciones de solo lectura que ejecutan algo en vivo, p. ej. EXPLAIN ANALYZE). */
-export async function postJson<T>(ruta: string, signal?: AbortSignal): Promise<T> {
+/** POST (acciones que ejecutan algo en vivo: EXPLAIN ANALYZE, demo de triggers, explorador). Cuerpo JSON opcional. */
+export async function postJson<T>(ruta: string, signal?: AbortSignal, envio?: unknown): Promise<T> {
   let r: Response;
   try {
-    r = await fetch(ruta, { method: 'POST', signal, headers: { Accept: 'application/json' } });
+    r = await fetch(ruta, {
+      method: 'POST',
+      signal,
+      headers: envio === undefined ? { Accept: 'application/json' } : { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: envio === undefined ? undefined : JSON.stringify(envio),
+    });
   } catch (e) {
     if ((e as Error).name === 'AbortError') throw e;
     throw new ErrorApi('No se puede contactar con la API. ¿Está arrancado el backend (npm run dev)?', 0);

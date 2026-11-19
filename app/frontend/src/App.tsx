@@ -8,6 +8,7 @@ import { Proximamente } from './pages/Proximamente';
 import { Calidad } from './pages/Calidad';
 import { Rendimiento } from './pages/Rendimiento';
 import { Triggers } from './pages/Triggers';
+import { Explorador } from './pages/Explorador';
 import { Cargando } from './components/Estado';
 
 // El diagrama ER (React Flow + dagre) se carga solo al entrar en la página
@@ -23,6 +24,8 @@ export function App() {
         <Route path="calidad" element={<Calidad />} />
         <Route path="rendimiento" element={<Rendimiento />} />
         <Route path="triggers" element={<Triggers />} />
+        <Route path="explorador" element={<Explorador />} />
+        <Route path="explorador/:tabla" element={<Explorador />} />
         <Route
           path="modelo"
           element={

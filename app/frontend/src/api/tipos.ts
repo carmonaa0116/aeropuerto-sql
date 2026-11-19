@@ -255,3 +255,99 @@ export interface ResultadoDemo {
   rastro: { tablas: { tabla: string; antes: number; despues: number }[]; intacto: boolean; msConteo: number };
   sql: { llamada: string; conteo: string };
 }
+
+// ---------------- Fase 4: explorador de tablas ----------------
+export type CategoriaCol = 'entero' | 'decimal' | 'float' | 'texto' | 'fecha' | 'fechahora' | 'enum';
+export type OperadorFiltro = 'igual' | 'contiene' | 'empieza' | 'entre' | 'es_nulo' | 'no_es_nulo';
+
+export interface ColumnaExpl {
+  nombre: string;
+  tipo: string;
+  categoria: CategoriaCol;
+  nulo: boolean;
+  pk: boolean;
+  fk: { tabla: string; columna: string } | null;
+  opciones: string[] | null;
+  origenOpciones: 'enum' | 'check' | null;
+  indexada: boolean;
+  operadores: OperadorFiltro[];
+}
+
+export interface TablaExpl {
+  nombre: string;
+  bloque: string;
+  columnas: ColumnaExpl[];
+  pk: string[];
+  etiqueta: string[];
+  filasEstimadas: number | null;
+  grande: boolean;
+  indices: { nombre: string; columnas: string[] }[];
+  referenciadaPor: { tabla: string; columna: string }[];
+}
+
+export interface ListaExpl {
+  tablas: { nombre: string; bloque: string; filasEstimadas: number | null; grande: boolean }[];
+  umbralGrande: number;
+  maxOffset: number;
+  topeConteo: number;
+  msFilas: number;
+}
+
+export interface FiltroExpl {
+  columna: string;
+  op: OperadorFiltro;
+  valor?: string;
+  valor2?: string;
+}
+
+export interface OrdenExpl {
+  columna: string;
+  dir: 'asc' | 'desc';
+}
+
+export type ModoExpl = 'inicio' | 'final' | 'siguiente' | 'anterior' | 'pagina';
+export type ValorCursor = string | number | null;
+
+export interface ConteoExpl {
+  tipo: 'exacto' | 'tope' | 'estimado';
+  valor: number | null;
+  masDe: number | null;
+  ms: number | null;
+  sql: string;
+  sqlConValores: string;
+  error: string | null;
+}
+
+export interface RespuestaFilas {
+  tabla: string;
+  filas: Fila[];
+  columnasCursor: string[];
+  orden: (OrdenExpl & { usuario: boolean })[];
+  paginacion: {
+    tipo: 'keyset' | 'offset';
+    keysetDisponible: boolean;
+    offset: number | null;
+    invertido: boolean;
+    hayAnterior: boolean;
+    haySiguiente: boolean;
+  };
+  conteo: ConteoExpl | null;
+  avisos: { tipo: string; texto: string }[];
+  sql: { texto: string; valores: unknown[]; conValores: string; ms: number };
+}
+
+export interface RespuestaPlan {
+  filas: Fila[];
+  campos: Campo[];
+  ms: number;
+  sql: string;
+}
+
+export interface RespuestaFk {
+  tabla: string;
+  columna: string;
+  etiqueta: string[];
+  opciones: { id: number; etiqueta: string | null }[];
+  sql: string | null;
+  ms: number;
+}

@@ -104,13 +104,15 @@ arranque en [`app/README.md`](app/README.md).
 - **Consultas Q01–Q10**: copias literales de `sql/04_consultas_avanzadas.sql`
   con los valores como parámetros; un test comprueba que son idénticas al
   original. Límite de tiempo por consulta, caché y cancelación (`KILL QUERY`).
-- **Estado**: fase 3 de 7 terminada: consultas con gráfica, tabla, SQL y
+- **Estado**: fase 4 de 7 terminada: consultas con gráfica, tabla, SQL y
   tiempo; página de proyecto con contadores en vivo, calidad de datos,
   rendimiento con `EXPLAIN ANALYZE` en vivo, modelo ER generado desde
-  `INFORMATION_SCHEMA` y demo de triggers en vivo (cada regla devuelve su
+  `INFORMATION_SCHEMA`, demo de triggers en vivo (cada regla devuelve su
   error real dentro de una transacción con `ROLLBACK`; `COUNT(*)` antes y
-  después). Próximas fases: explorador de tablas, CRUD y asistente de
-  creación de vuelos.
+  después) y explorador de las 21 tablas (filtros por tipo de columna, orden
+  por varias columnas, paginación por clave en las tablas grandes y el SQL
+  generado con su tiempo y su `EXPLAIN`). Próximas fases: CRUD y asistente
+  de creación de vuelos.
 
 ## Limitaciones conocidas
 

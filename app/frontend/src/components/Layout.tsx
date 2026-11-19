@@ -9,10 +9,10 @@ export const SECCIONES_BD = [
   { ruta: '/calidad', titulo: 'Calidad de datos' },
   { ruta: '/rendimiento', titulo: 'Rendimiento e índices' },
   { ruta: '/triggers', titulo: 'Triggers en vivo' },
+  { ruta: '/explorador', titulo: 'Explorador de tablas' },
 ];
 
 export const SECCIONES_FUTURAS = [
-  { ruta: '/explorador', titulo: 'Explorador de tablas', fase: 4 },
   { ruta: '/crud', titulo: 'CRUD', fase: 5 },
   { ruta: '/asistente', titulo: 'Asistente de vuelos', fase: 6 },
 ];

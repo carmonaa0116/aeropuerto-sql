@@ -2,7 +2,7 @@
 
 App local (React + Express + MySQL 8) para enseñar el SQL del proyecto: cada gráfica tiene su tabla, su tiempo de ejecución y el SQL exacto.
 
-> Estado: **fase 3 de 7** (consultas Q01–Q10, proyecto, calidad, rendimiento, modelo ER y demo de triggers). El explorador, el CRUD y el asistente llegan en las fases siguientes.
+> Estado: **fase 4 de 7** (consultas Q01–Q10, proyecto, calidad, rendimiento, modelo ER, demo de triggers y explorador de tablas). El CRUD y el asistente llegan en las fases siguientes.
 
 ## Requisitos
 
@@ -39,6 +39,7 @@ App local (React + Express + MySQL 8) para enseñar el SQL del proyecto: cada gr
 - **Backend** (`app/backend`): Express, `mysql2` con pool, `zod` para validar cada parámetro y `helmet`. Usa el usuario `app_ro` (solo `SELECT`). Nunca acepta SQL del navegador: las consultas son fijas y los valores van como parámetros (`?`). `multipleStatements` está desactivado.
 - **Consultas Q01–Q10**: `app/backend/src/queries/qNN.sql` son copias literales de `sql/04_consultas_avanzadas.sql` en las que los valores fijos pasan a ser `?`. Una prueba comprueba que, con los valores por defecto, el SQL es idéntico al original. El título, la pregunta y las técnicas de cada consulta se leen del propio `sql/04`.
 - **Demo de triggers**: el procedimiento `sp_demo_trigger(caso)` (`app/backend/sql/01_demo_triggers.sql`, `SQL SECURITY DEFINER`) abre una transacción, crea datos de prueba marcados (`#D…`, `TEST-D*`, año 2030), lanza la sentencia del caso, lee el error real con `GET DIAGNOSTICS` y hace `ROLLBACK` siempre. `app_rw` solo tiene `EXECUTE` sobre él. El backend hace `COUNT(*)` de las tablas afectadas antes y después con `app_ro`.
+- **Explorador de tablas**: solo lectura con `app_ro`. Tablas, columnas y operadores salen de una lista blanca construida con `INFORMATION_SCHEMA` (las 21 tablas del proyecto); los valores van siempre como `?` y se validan antes contra el tipo de la columna; `LIKE` escapa `%` y `_`. La clave primaria se añade al final del `ORDER BY` para que el orden sea total. Navegación por clave (keyset: `WHERE (col, pk) > (última fila)` desarrollado en `OR`, con NULL bien tratado) en vez de `OFFSET`; «Ir a la página N» usa `OFFSET` solo hasta 10.000 filas en las tablas grandes (≥ 100.000 filas estimadas). Recuento exacto en tablas pequeñas, estimado (`information_schema.TABLES`) sin filtros en las grandes y con tope («más de 10.000») con filtros; botón para contarlo exacto. Límite de 10 s por consulta, aviso al ordenar por columnas sin índice y botón `EXPLAIN`.
 - **Consultas pesadas**: límite de tiempo en el servidor (`max_execution_time`), caché en memoria con TTL y cancelación (si cierras o cambias el filtro, el backend lanza `KILL QUERY`).
 - **Comprobación de cordura**: al arrancar, el backend compara los recuentos de varias tablas con las cifras del proyecto y avisa por consola si difieren.
 - **Frontend** (`app/frontend`): Vite + React 18 + TypeScript, React Router, TanStack Query y Recharts. Tema claro u oscuro. Las horas están en UTC.

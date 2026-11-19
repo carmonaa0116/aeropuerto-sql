@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
+import { ErrorPeticion } from '../services/explorador.js';
 
 interface ErrorMySQL {
   code?: string;
@@ -23,6 +24,11 @@ export const manejadorErrores: ErrorRequestHandler = (err, req, res, _next) => {
         mensaje: i.code === 'unrecognized_keys' ? `Parámetro no admitido: ${i.keys.join(', ')}` : i.message,
       })),
     });
+    return;
+  }
+
+  if (err instanceof ErrorPeticion) {
+    res.status(err.status).json({ error: err.message, detalle: err.detalle });
     return;
   }
 
