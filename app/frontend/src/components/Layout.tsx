@@ -8,10 +8,10 @@ export const SECCIONES_BD = [
   { ruta: '/modelo', titulo: 'Modelo ER' },
   { ruta: '/calidad', titulo: 'Calidad de datos' },
   { ruta: '/rendimiento', titulo: 'Rendimiento e índices' },
+  { ruta: '/triggers', titulo: 'Triggers en vivo' },
 ];
 
 export const SECCIONES_FUTURAS = [
-  { ruta: '/triggers', titulo: 'Triggers en vivo', fase: 3 },
   { ruta: '/explorador', titulo: 'Explorador de tablas', fase: 4 },
   { ruta: '/crud', titulo: 'CRUD', fase: 5 },
   { ruta: '/asistente', titulo: 'Asistente de vuelos', fase: 6 },

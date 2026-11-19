@@ -214,3 +214,44 @@ export interface RespuestaModelo {
   desdeCache: boolean;
   sql: Record<string, string>;
 }
+
+// ---------------- Fase 3: demo de triggers ----------------
+export interface ValidadorDemo {
+  nombre: string;
+  archivo: string;
+  sql: string;
+}
+
+export interface CasoDemo {
+  id: string;
+  titulo: string;
+  bloque: string;
+  regla: string;
+  escenario: string;
+  esperado: { resultado: 'error' | 'ok'; errno: number | null; mensaje: string | null };
+  sqlIntento: string;
+  llamada: string;
+  tablas: string[];
+  validadores: ValidadorDemo[];
+}
+
+export interface RespuestaDemo {
+  archivo: string;
+  preparacion: string;
+  casos: CasoDemo[];
+  instalacion: { ok: boolean; motivo: string | null };
+}
+
+export interface ResultadoDemo {
+  caso: string;
+  resultado: 'error' | 'ok';
+  paso: 'validacion' | 'preparacion' | 'intento';
+  errno: number | null;
+  estadoSql: string | null;
+  mensaje: string | null;
+  esperado: CasoDemo['esperado'];
+  coincide: boolean;
+  ms: number;
+  rastro: { tablas: { tabla: string; antes: number; despues: number }[]; intacto: boolean; msConteo: number };
+  sql: { llamada: string; conteo: string };
+}

@@ -8,6 +8,7 @@ import { rutasProyecto } from './routes/proyecto.js';
 import { rutasCalidad } from './routes/calidad.js';
 import { rutasRendimiento } from './routes/rendimiento.js';
 import { rutasModelo } from './routes/modelo.js';
+import { rutasTriggers } from './routes/triggers.js';
 import { manejadorErrores } from './middleware/errores.js';
 
 export function crearApp() {
@@ -33,6 +34,7 @@ export function crearApp() {
   app.use('/api/calidad', rutasCalidad);
   app.use('/api/rendimiento', rutasRendimiento);
   app.use('/api/modelo', rutasModelo);
+  app.use('/api/triggers', rutasTriggers);
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Ruta de la API no encontrada' });
   });

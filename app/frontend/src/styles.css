@@ -335,3 +335,23 @@ button.enlace { font: inherit; background: none; border: 0; padding: 0; color: v
   .lateral { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
   .contenido, .barra { padding-left: 16px; padding-right: 16px; }
 }
+
+/* ---------------- Fase 3: demo de triggers ---------------- */
+.lista-casos { display: grid; gap: 14px; }
+.caso-demo { display: grid; gap: 10px; }
+.caso-cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.caso-cabecera h3 { margin: 0; font-size: 1.05rem; }
+.caso-demo .regla { margin: 0; max-width: 85ch; }
+.caso-demo .escenario { margin: 0; font-size: .9rem; max-width: 85ch; }
+.validadores { display: flex; gap: 6px; flex-wrap: wrap; }
+.validadores code { font-size: .78rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+.caso-accion { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: .85rem; }
+.caso-resultado { display: grid; gap: 8px; }
+.caso-resultado .callout { margin: 0; }
+pre.salida-mysql {
+  margin: 0; padding: 10px 14px; border-radius: 8px; font-family: var(--mono); font-size: .85rem;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+  background: var(--surface-2); border: 1px solid var(--border); border-left: 4px solid var(--st-error); color: var(--text-1);
+}
+pre.salida-mysql.ok { border-left-color: var(--st-ok); }
+.rastro { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .85rem; }

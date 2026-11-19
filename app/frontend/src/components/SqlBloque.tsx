@@ -5,7 +5,8 @@ const KW = new Set(
     'select from where join left right inner outer on and or not in exists is null as with recursive union all group by order having ' +
     'limit over partition window rows between preceding current row desc asc case when then else end distinct count sum avg min max ' +
     'round coalesce nullif cast concat date interval day minute hour like rank ntile lag row_number timestampdiff date_sub rollup char ' +
-    'explain analyze true false'
+    'explain analyze true false insert into values update set delete call signal declare begin if elseif ' +
+    'create procedure trigger before for each start transaction rollback commit'
   ).split(' '),
 );
 
