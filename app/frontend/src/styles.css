@@ -36,6 +36,11 @@
   --error: #b42828;
   --error-bg: #fdeaea;
 
+  /* paleta de estado (fija, igual en claro y oscuro; siempre con icono + texto) */
+  --st-ok: #0ca30c;
+  --st-warn: #fab219;
+  --st-error: #d03b3b;
+
   --radius: 10px;
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, 'Cascadia Code', 'Consolas', 'SFMono-Regular', monospace;
@@ -245,6 +250,85 @@ pre.sql .com { color: var(--sql-com); font-style: italic; }
 pre.sql .ph { background: var(--warn-bg); color: var(--warn-ink); border-radius: 3px; padding: 0 2px; font-weight: 700; }
 .valores { padding: 8px 16px 12px; font-size: .82rem; color: var(--text-2); border-top: 1px solid var(--border); }
 .valores code { background: var(--surface-2); padding: 1px 6px; border-radius: 4px; margin-right: 6px; }
+
+/* ---------- fase 2 ---------- */
+.insignia { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; font-weight: 600; white-space: nowrap; color: var(--text-1); }
+.insignia .ico { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; font-size: .68rem; font-weight: 800; line-height: 1; }
+.insignia.st-ok .ico { background: var(--st-ok); color: #fff; }
+.insignia.st-warn .ico { background: var(--st-warn); color: #0b0b0b; }
+.insignia.st-error .ico { background: var(--st-error); color: #fff; }
+.insignia.st-info .ico { background: var(--bar-neutral); color: #0b0b0b; font-style: italic; font-family: Georgia, serif; }
+
+.tile-boton { font: inherit; text-align: left; cursor: pointer; color: inherit; }
+.tile-boton:hover { border-color: var(--accent); }
+.tile-boton[aria-pressed='true'] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.callout { border: 1px solid var(--border); border-left: 4px solid var(--st-warn); background: var(--surface); border-radius: 8px; padding: 10px 14px; font-size: .9rem; }
+.callout.st-error { border-left-color: var(--st-error); }
+.callout .md p { display: inline; }
+
+.filtros { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin: 8px 0 12px; }
+.campo select.boton { min-width: 130px; }
+.dos-columnas { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px 28px; }
+.lista-reglas { margin: 6px 0 12px; padding-left: 18px; font-size: .88rem; color: var(--text-2); }
+.lista-reglas li { margin: 4px 0; }
+.lista-reglas .md p { margin: 0; }
+
+table.datos tr.grupo th { background: var(--page); font-family: var(--font); font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); position: static; }
+table.datos tr.detalle td { background: var(--surface-2); white-space: normal; padding: 10px 12px; }
+table.datos tr.detalle:hover td { background: var(--surface-2); }
+
+/* páginas que pintan markdown del repo */
+.pagina-doc header .md { color: var(--text-2); max-width: 75ch; }
+.md { max-width: 80ch; }
+.md p, .md li { color: var(--text-2); }
+.md code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: .86em; }
+.md pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: .82rem; }
+.md pre code { background: none; padding: 0; }
+.md .md-tabla { margin: 10px 0; max-width: 100%; }
+.md .md-tabla td { white-space: normal; }
+.md h3 { margin-top: 18px; }
+.indice-doc { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 4px; }
+.indice-doc a { font-size: .8rem; padding: 3px 10px; border: 1px solid var(--border); border-radius: 99px; text-decoration: none; color: var(--text-2); background: var(--surface); }
+.indice-doc a:hover { border-color: var(--accent); color: var(--text-1); }
+.seccion-doc { margin-top: 28px; scroll-margin-top: 60px; }
+.seccion-doc h2 { padding-bottom: 6px; border-bottom: 1px solid var(--border); scroll-margin-top: 60px; }
+
+.pipeline { list-style: none; padding: 0; margin: 10px 0 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; counter-reset: p; }
+.pipeline li { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px 10px 38px; font-size: .85rem; display: flex; flex-direction: column; gap: 2px; }
+.pipeline li .num { position: absolute; left: 10px; top: 10px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: .72rem; font-weight: 700; display: grid; place-items: center; }
+.pipeline li code { font-size: .74rem; color: var(--text-muted); white-space: normal; overflow-wrap: anywhere; }
+
+pre.plan { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); max-height: 460px; overflow: auto; font-size: .78rem; }
+pre.plan mark { background: var(--warn-bg); color: var(--warn-ink); font-weight: 700; border-radius: 3px; padding: 0 2px; }
+
+button.enlace { font: inherit; background: none; border: 0; padding: 0; color: var(--accent-ink); cursor: pointer; text-decoration: underline; font-family: var(--mono); font-size: .84rem; }
+
+/* modelo ER */
+.er-lienzo { height: 640px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.er-lienzo .react-flow { --xy-background-color: var(--surface); --xy-edge-stroke: var(--axis); --xy-edge-label-background-color: var(--surface); --xy-edge-label-color: var(--text-1); }
+.er-nodo { background: var(--surface); border: 1px solid var(--axis); border-radius: 8px; font-size: 11.5px; color: var(--text-1); box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: opacity .15s; }
+.er-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--grid); background: var(--surface-2); border-radius: 8px 8px 0 0; }
+.er-cab strong { font-family: var(--mono); font-size: 12.5px; }
+.er-cab span { color: var(--text-muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.er-nodo ul { list-style: none; margin: 0; padding: 4px 10px 6px; font-family: var(--mono); }
+.er-nodo li { height: 19px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; color: var(--text-2); }
+.er-pk, .er-fk { font-family: var(--font); font-size: 9px; font-weight: 700; border-radius: 3px; padding: 0 3px; min-width: 18px; text-align: center; }
+.er-pk { background: var(--accent); color: #fff; }
+.er-fk { border: 1px solid var(--axis); color: var(--text-2); }
+.er-activa { border: 2px solid var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+.er-vecina { border-color: var(--accent); }
+.er-atenuada { opacity: .35; }
+.er-handle { opacity: 0; width: 1px !important; height: 1px !important; min-width: 0 !important; min-height: 0 !important; border: 0 !important; }
+.er-arista path.react-flow__edge-path { stroke: var(--axis); stroke-width: 1.3; }
+.er-arista.activa path.react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
+.er-arista.atenuada { opacity: .2; }
+.er-marca { stroke: var(--axis); stroke-width: 1.3; }
+.er-marca.activa { stroke: var(--accent); stroke-width: 1.6; }
+.react-flow__edge-text { font-family: var(--mono); font-size: 10.5px; }
+.ficha h2 { font-size: 1.05rem; }
+.ficha table.datos td { white-space: normal; overflow-wrap: anywhere; }
+.ficha table.datos td:first-child { white-space: nowrap; }
 
 @media (max-width: 860px) {
   .app { grid-template-columns: 1fr; }

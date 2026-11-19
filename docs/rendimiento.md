@@ -55,6 +55,27 @@ El índice incluye `id_vuelo` y `precio` (las columnas que usa el
 `COUNT(DISTINCT ...)` y el `SUM`), de modo que ninguna parte lee la tabla.
 Al empezar por `id_pasajero`, sustituye al índice implícito de la FK.
 
+## MySQL 8 (medición en el equipo del autor)
+
+Repetición del `EXPLAIN ANALYZE` de `sql/05_indices.sql` en MySQL 8.0.44
+(buffer pool de 128 MB), con los mismos datos. Los tiempos absolutos no se
+comparan con los de MariaDB; lo que cuenta es antes frente a después.
+
+### I2 — consulta Q10 en MySQL 8
+
+| | Antes | Después |
+|---|---|---|
+| Tiempo | 1.932 ms | **988 ms** (−49 %) |
+
+### I1 — consulta Q09 en MySQL 8
+
+| | Antes | Después |
+|---|---|---|
+| Tiempo | no medido | **1.541 ms** |
+
+Q09 solo se midió con el índice ya creado; su antes/después es el de
+MariaDB (I1, arriba).
+
 ## Índices probados y descartados
 
 | Índice | Consulta objetivo | Resultado |
@@ -78,5 +99,6 @@ UPDATE de `estado`; con una carga masiva se recomienda crearlos después de
 
 - Datos de billetes sintéticos y solo para 5.000 vuelos: las ganancias de I1
   e I2 dependen de ese volumen.
-- Mediciones en MariaDB 10.11; pendiente de repetir con `EXPLAIN ANALYZE` en
-  MySQL 8 (sintaxis distinta: MariaDB usa `ANALYZE`).
+- Las mediciones detalladas (planes y filas leídas) son de MariaDB 10.11
+  (sintaxis distinta: MariaDB usa `ANALYZE`). En MySQL 8 se repitieron los
+  tiempos de Q10 (antes y después) y de Q09 (solo después): ver "MySQL 8".

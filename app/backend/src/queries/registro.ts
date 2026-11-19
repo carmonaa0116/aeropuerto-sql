@@ -20,7 +20,7 @@ const fecha = z
   .refine((d) => d >= DIA_MIN && d <= DIA_MAX, `Debe estar entre ${DIA_MIN} y ${DIA_MAX} (UTC)`);
 
 const entero = (min: number, max: number, defecto: number) =>
-  z.coerce.number({ invalid_type_error: 'Debe ser un número' }).int('Debe ser un número entero').min(min, `Mínimo ${min}`).max(max, `Máximo ${max}`).default(defecto);
+  z.coerce.number({ error: 'Debe ser un número' }).int('Debe ser un número entero').min(min, `Mínimo ${min}`).max(max, `Máximo ${max}`).default(defecto);
 
 function diaSiguiente(dia: string): string {
   const d = new Date(`${dia}T00:00:00Z`);
@@ -71,7 +71,7 @@ const rangoFechas = <T extends z.ZodRawShape>(extra: T) =>
   z
     .object({ desde: fecha.default(DIA_MIN), hasta: fecha.default(DIA_MAX), ...extra })
     .strict()
-    .refine((p) => String(p.desde) <= String(p.hasta), { message: '"desde" no puede ser posterior a "hasta"', path: ['hasta'] });
+    .refine((p: Record<string, unknown>) => String(p.desde) <= String(p.hasta), { message: '"desde" no puede ser posterior a "hasta"', path: ['hasta'] });
 
 const pDesde: ParamUI = { nombre: 'desde', etiqueta: 'Desde (UTC)', tipo: 'fecha', defecto: DIA_MIN, min: DIA_MIN, max: DIA_MAX };
 const pHasta: ParamUI = { nombre: 'hasta', etiqueta: 'Hasta (UTC)', tipo: 'fecha', defecto: DIA_MAX, min: DIA_MIN, max: DIA_MAX };

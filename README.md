@@ -104,10 +104,11 @@ arranque en [`app/README.md`](app/README.md).
 - **Consultas Q01–Q10**: copias literales de `sql/04_consultas_avanzadas.sql`
   con los valores como parámetros; un test comprueba que son idénticas al
   original. Límite de tiempo por consulta, caché y cancelación (`KILL QUERY`).
-- **Estado**: fase 1 de 7 terminada (consultas con gráfica, tabla, SQL y
-  tiempo; 34 tests en verde en MySQL 8). Próximas fases: página de proyecto,
-  calidad de datos, rendimiento, modelo ER, demo de triggers en vivo,
-  explorador de tablas, CRUD y asistente de creación de vuelos.
+- **Estado**: fase 2 de 7 terminada: consultas con gráfica, tabla, SQL y
+  tiempo; página de proyecto con contadores en vivo, calidad de datos,
+  rendimiento con `EXPLAIN ANALYZE` en vivo y modelo ER generado desde
+  `INFORMATION_SCHEMA`. Próximas fases: demo de triggers en vivo, explorador
+  de tablas, CRUD y asistente de creación de vuelos.
 
 ## Limitaciones conocidas
 

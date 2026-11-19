@@ -15,6 +15,7 @@ export interface Colores {
   tenue: string;
   texto: string;
   superficie: string;
+  estado: { ok: string; warn: string; error: string };
 }
 
 export function useColores(): Colores {
@@ -31,6 +32,7 @@ export function useColores(): Colores {
       tenue: v('--text-muted'),
       texto: v('--text-2'),
       superficie: v('--surface'),
+      estado: { ok: v('--st-ok'), warn: v('--st-warn'), error: v('--st-error') },
     };
     // resuelto: recalcula al cambiar de tema
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -6,7 +6,7 @@ App local (React + Express + MySQL 8) para enseñar el SQL del proyecto: cada gr
 
 ## Requisitos
 
-- Node 20 o superior
+- Node 22.12 o superior
 - MySQL 8 con la base `aeropuerto` cargada (ver el README de la raíz)
 
 ## Arranque (PowerShell)

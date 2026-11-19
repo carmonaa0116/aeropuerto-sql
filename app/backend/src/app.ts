@@ -4,6 +4,10 @@ import cors from 'cors';
 import { config } from './config.js';
 import { rutasConsultas } from './routes/consultas.js';
 import { rutasSalud } from './routes/salud.js';
+import { rutasProyecto } from './routes/proyecto.js';
+import { rutasCalidad } from './routes/calidad.js';
+import { rutasRendimiento } from './routes/rendimiento.js';
+import { rutasModelo } from './routes/modelo.js';
 import { manejadorErrores } from './middleware/errores.js';
 
 export function crearApp() {
@@ -25,6 +29,10 @@ export function crearApp() {
 
   app.use('/api/salud', rutasSalud);
   app.use('/api/consultas', rutasConsultas);
+  app.use('/api/proyecto', rutasProyecto);
+  app.use('/api/calidad', rutasCalidad);
+  app.use('/api/rendimiento', rutasRendimiento);
+  app.use('/api/modelo', rutasModelo);
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Ruta de la API no encontrada' });
   });

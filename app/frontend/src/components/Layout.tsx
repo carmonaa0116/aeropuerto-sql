@@ -4,11 +4,14 @@ import { getJson } from '../api/cliente';
 import type { MetaConsulta, Salud } from '../api/tipos';
 import { useTema, type Preferencia } from '../lib/tema';
 
+export const SECCIONES_BD = [
+  { ruta: '/modelo', titulo: 'Modelo ER' },
+  { ruta: '/calidad', titulo: 'Calidad de datos' },
+  { ruta: '/rendimiento', titulo: 'Rendimiento e índices' },
+];
+
 export const SECCIONES_FUTURAS = [
   { ruta: '/triggers', titulo: 'Triggers en vivo', fase: 3 },
-  { ruta: '/rendimiento', titulo: 'Rendimiento', fase: 2 },
-  { ruta: '/calidad', titulo: 'Calidad de datos', fase: 2 },
-  { ruta: '/modelo', titulo: 'Modelo ER', fase: 2 },
   { ruta: '/explorador', titulo: 'Explorador de tablas', fase: 4 },
   { ruta: '/crud', titulo: 'CRUD', fase: 5 },
   { ruta: '/asistente', titulo: 'Asistente de vuelos', fase: 6 },
@@ -82,6 +85,12 @@ export function Layout() {
               </NavLink>
             ))}
           </div>
+          <div className="nav-titulo">Base de datos</div>
+          {SECCIONES_BD.map((s) => (
+            <NavLink key={s.ruta} to={s.ruta}>
+              {s.titulo}
+            </NavLink>
+          ))}
           <div className="nav-titulo">Próximas fases</div>
           {SECCIONES_FUTURAS.map((s) => (
             <NavLink key={s.ruta} to={s.ruta}>

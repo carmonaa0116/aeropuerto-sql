@@ -71,3 +71,8 @@ export async function conCache<T>(
 export function vaciarCache(): void {
   almacen.clear();
 }
+
+/** Borra una entrada (para el botón "Recontar" / "Volver a leer"). */
+export function invalidar(clave: string): void {
+  almacen.delete(clave);
+}

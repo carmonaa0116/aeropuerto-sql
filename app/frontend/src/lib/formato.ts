@@ -45,3 +45,15 @@ export function diaCorto(iso: unknown): string {
 export function esNumero(v: unknown): boolean {
   return typeof v === 'number';
 }
+
+/** "2025-12-31 21:40:00" -> "31 dic 2025, 21:40" (sin conversión: el valor ya está en UTC) */
+export function fechaHora(v: unknown): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(v ?? ''));
+  return m ? `${Number(m[3])} ${MESES[Number(m[2]) - 1]} ${m[1]}, ${m[4]}:${m[5]}` : String(v ?? '—');
+}
+
+/** Hora local del navegador (para "medido a las ...", que no es un dato de la BD). */
+export function horaLocal(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}

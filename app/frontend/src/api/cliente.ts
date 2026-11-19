@@ -30,3 +30,20 @@ export async function getJson<T>(ruta: string, signal?: AbortSignal): Promise<T>
   }
   return cuerpo as T;
 }
+
+/** POST sin cuerpo (acciones de solo lectura que ejecutan algo en vivo, p. ej. EXPLAIN ANALYZE). */
+export async function postJson<T>(ruta: string, signal?: AbortSignal): Promise<T> {
+  let r: Response;
+  try {
+    r = await fetch(ruta, { method: 'POST', signal, headers: { Accept: 'application/json' } });
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') throw e;
+    throw new ErrorApi('No se puede contactar con la API. ¿Está arrancado el backend (npm run dev)?', 0);
+  }
+  const cuerpo = await r.json().catch(() => null);
+  if (!r.ok) {
+    const detalle = Array.isArray(cuerpo?.detalle) ? (cuerpo.detalle as DetalleError[]) : null;
+    throw new ErrorApi(cuerpo?.error ?? `Error HTTP ${r.status}`, r.status, detalle, cuerpo?.codigo ?? null);
+  }
+  return cuerpo as T;
+}

@@ -19,7 +19,7 @@ export const manejadorErrores: ErrorRequestHandler = (err, req, res, _next) => {
     res.status(400).json({
       error: 'Parámetros no válidos',
       detalle: err.issues.map((i) => ({
-        campo: i.path.join('.') || '(general)',
+        campo: i.path.map(String).join('.') || '(general)',
         mensaje: i.code === 'unrecognized_keys' ? `Parámetro no admitido: ${i.keys.join(', ')}` : i.message,
       })),
     });
@@ -41,7 +41,15 @@ export const manejadorErrores: ErrorRequestHandler = (err, req, res, _next) => {
       res.status(499).json({ error: 'Consulta cancelada', codigo: e.errno });
       return;
     case 1045: // acceso denegado
-      res.status(503).json({ error: 'MySQL rechazó el usuario o la clave de app/backend/.env', codigo: e.errno });
+      // sqlMessage dice usuario, host y si se envió clave ("using password: YES/NO"); nunca la clave
+      res.status(503).json({
+        error: `MySQL rechazó el usuario o la clave de app/backend/.env. ${e.sqlMessage ?? ''}`.trim(),
+        codigo: e.errno,
+      });
+      return;
+    case 1146: // la tabla no existe
+    case 1049: // la base no existe
+      res.status(404).json({ error: `MySQL no encuentra el objeto: ${e.sqlMessage ?? ''}`.trim(), codigo: e.errno });
       return;
     case 1142:
     case 1143: // sin permiso sobre tabla/columna
