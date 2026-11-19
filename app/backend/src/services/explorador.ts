@@ -36,6 +36,9 @@ export interface ColumnaMeta {
   origenOpciones: 'enum' | 'check' | null;
   indexada: boolean; // primera columna de algún índice
   operadores: Operador[];
+  defecto: string | null; // COLUMN_DEFAULT normalizado (sin comillas)
+  auto: boolean; // AUTO_INCREMENT
+  longitud: number | null; // varchar(n) / char(n)
 }
 
 export interface TablaMeta {
@@ -46,7 +49,8 @@ export interface TablaMeta {
   etiqueta: string[]; // columnas que identifican una fila para personas (buscador de FK)
   filasEstimadas: number | null;
   grande: boolean;
-  indices: { nombre: string; columnas: string[] }[];
+  indices: { nombre: string; columnas: string[]; unico: boolean }[];
+  checks: { nombre: string; condicion: string }[];
   referenciadaPor: { tabla: string; columna: string }[];
 }
 
@@ -92,6 +96,15 @@ export function checkEnLista(condicion: string): { columna: string; valores: str
   return valores.every((v) => v.length > 0) ? { columna: m[1], valores } : null;
 }
 
+/** MySQL 8 da el defecto sin comillas (programado); MariaDB, entre comillas ('programado') o 'NULL' */
+export function defectoNormalizado(v: unknown): string | null {
+  if (v === null || v === undefined) return null;
+  const t = String(v);
+  if (t === 'NULL') return null;
+  const m = /^'(.*)'$/s.exec(t);
+  return m ? m[1].replace(/''/g, "'") : t;
+}
+
 const CODIGOS = ['codigo_iata', 'codigo_iso', 'matricula', 'numero_vuelo', 'localizador', 'documento', 'licencia', 'codigo', 'designacion'];
 const DESCRIPTIVAS = ['fabricante', 'nombre', 'apellidos', 'salida_prevista'];
 
@@ -118,7 +131,9 @@ async function leerMetadatos(signal: AbortSignal): Promise<Map<string, TablaMeta
   const fkDe = new Map<string, { tabla: string; columna: string }>();
   for (const f of r.claves_foraneas) fkDe.set(`${f.tabla}.${f.columna}`, { tabla: s(f.tabla_ref), columna: s(f.columna_ref) });
   const checkDe = new Map<string, string[]>();
+  const checksDe = new Map<string, { nombre: string; condicion: string }[]>();
   for (const c of r.checks) {
+    if (c.tabla !== null) checksDe.set(s(c.tabla), [...(checksDe.get(s(c.tabla)) ?? []), { nombre: s(c.restriccion), condicion: s(c.condicion) }]);
     const l = c.tabla === null ? null : checkEnLista(s(c.condicion));
     if (l) checkDe.set(`${c.tabla}.${l.columna}`, l.valores);
   }
@@ -129,7 +144,7 @@ async function leerMetadatos(signal: AbortSignal): Promise<Map<string, TablaMeta
     if (!TABLAS.includes(nombre)) continue; // lista blanca: solo las 21 del proyecto
     const indices = r.indices
       .filter((i) => i.tabla === nombre)
-      .map((i) => ({ nombre: s(i.indice), columnas: s(i.columnas).split(', ') }));
+      .map((i) => ({ nombre: s(i.indice), columnas: s(i.columnas).split(', '), unico: Number(i.no_unico) === 0 }));
     const pk = indices.find((i) => i.nombre === 'PRIMARY')?.columnas ?? [];
     const primeras = new Set(indices.map((i) => i.columnas[0]));
     const columnas: ColumnaMeta[] = r.columnas
@@ -149,6 +164,9 @@ async function leerMetadatos(signal: AbortSignal): Promise<Map<string, TablaMeta
           opciones: enumV ?? checkV,
           origenOpciones: enumV ? ('enum' as const) : checkV ? ('check' as const) : null,
           indexada: primeras.has(col),
+          defecto: defectoNormalizado(c.defecto),
+          auto: /auto_increment/i.test(s(c.extra ?? '')),
+          longitud: Number(/^(?:var)?char\((\d+)\)/i.exec(tipo)?.[1] ?? (/^char$/i.test(tipo) ? 1 : NaN)) || null,
         };
         return { ...base, operadores: operadoresDe(base) };
       });
@@ -165,6 +183,7 @@ async function leerMetadatos(signal: AbortSignal): Promise<Map<string, TablaMeta
       filasEstimadas,
       grande: (filasEstimadas ?? 0) >= UMBRAL_GRANDE,
       indices,
+      checks: checksDe.get(nombre) ?? [],
       referenciadaPor: [],
     });
   }

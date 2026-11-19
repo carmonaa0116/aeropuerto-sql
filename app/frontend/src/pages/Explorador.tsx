@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getJson, postJson } from '../api/cliente';
 import type {
+  CatalogoCrud,
   ColumnaExpl,
   ConteoExpl,
   FiltroExpl,
@@ -12,9 +13,11 @@ import type {
   OrdenExpl,
   RespuestaFilas,
   RespuestaPlan,
+  TablaCrudInfo,
   TablaExpl,
   ValorCursor,
 } from '../api/tipos';
+import { DialogoCrud, type AccionCrud } from '../components/DialogoCrud';
 import { Cargando, MensajeError } from '../components/Estado';
 import { FkBuscador } from '../components/FkBuscador';
 import { SqlBloque } from '../components/SqlBloque';
@@ -339,8 +342,10 @@ function Celda({ col, v }: { col: ColumnaExpl; v: unknown }) {
 // Página de una tabla
 // ------------------------------------------------------------------
 
-function VistaTabla({ tabla, lista }: { tabla: TablaExpl; lista: ListaExpl }) {
+function VistaTabla({ tabla, lista, crud }: { tabla: TablaExpl; lista: ListaExpl; crud?: TablaCrudInfo }) {
   const [sp, setSp] = useSearchParams();
+  const clienteQuery = useQueryClient();
+  const [accion, setAccion] = useState<AccionCrud | null>(null);
   const filtros = useMemo(() => leerFiltros(sp.get('f')), [sp]);
   const orden = useMemo(() => leerOrden(sp.get('orden')), [sp]);
   const tamano = TAMANOS.includes(Number(sp.get('tam'))) ? Number(sp.get('tam')) : 25;
@@ -384,6 +389,15 @@ function VistaTabla({ tabla, lista }: { tabla: TablaExpl; lista: ListaExpl }) {
     if (c && !q.isPlaceholderData && q.data?.tabla === tabla.nombre) setConteos((m) => (m[claveConteo] ? m : { ...m, [claveConteo]: c }));
   }, [q.data, q.isPlaceholderData, claveConteo, tabla.nombre]);
   useEffect(() => setPlan(null), [claveVista, nav.modo, nav.pagina]);
+
+  /** Tras un COMMIT: las filas, los recuentos y los buscadores de FK ya no valen */
+  const trasEscribir = () => {
+    setConteos({});
+    clienteQuery.invalidateQueries({ queryKey: ['explorador', tabla.nombre] });
+    clienteQuery.invalidateQueries({ queryKey: ['explorador-lista'] });
+    clienteQuery.invalidateQueries({ queryKey: ['fk'] });
+    clienteQuery.invalidateQueries({ queryKey: ['fk-id'] });
+  };
 
   const cambiarUrl = (f: FiltroExpl[], o: OrdenExpl[], t = tamano) => {
     const n = new URLSearchParams();
@@ -503,6 +517,18 @@ function VistaTabla({ tabla, lista }: { tabla: TablaExpl; lista: ListaExpl }) {
         </div>
       </header>
 
+      {crud && (
+        <div className="crud-barra">
+          <button className="boton primario" onClick={() => setAccion({ tipo: 'crear' })}>
+            + Nueva fila
+          </button>
+          <span className="aviso">
+            Esta tabla admite escritura (usuario <code>app_rw</code>). Por defecto se <strong>simula</strong> (ROLLBACK); confirmar modifica datos reales y desvía las
+            cifras de verificación y del README. <Link to="/crud">Copia de seguridad antes de confirmar</Link>.
+          </span>
+        </div>
+      )}
+
       <EditorFiltros tabla={tabla} aplicados={filtros} aplicar={(f) => cambiarUrl(f, orden)} />
 
       {d?.avisos.map((a) => (
@@ -570,6 +596,11 @@ function VistaTabla({ tabla, lista }: { tabla: TablaExpl; lista: ListaExpl }) {
           <table className="datos">
             <thead>
               <tr>
+                {crud && (
+                  <th scope="col" className="col-acciones">
+                    <span className="sr-only">Acciones</span>
+                  </th>
+                )}
                 {tabla.columnas.map((c) => (
                   <Cabecera key={c.nombre} col={c} orden={orden} grande={tabla.grande} onClic={clicCabecera} />
                 ))}
@@ -578,6 +609,24 @@ function VistaTabla({ tabla, lista }: { tabla: TablaExpl; lista: ListaExpl }) {
             <tbody>
               {d.filas.map((f, i) => (
                 <tr key={i}>
+                  {crud && (
+                    <td className="col-acciones">
+                      <button
+                        className="boton peque"
+                        onClick={() => setAccion({ tipo: 'editar', id: Number(f[crud.pk]) })}
+                        aria-label={`Editar ${tabla.nombre} ${String(f[crud.pk])}`}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="boton peque"
+                        onClick={() => setAccion({ tipo: 'borrar', id: Number(f[crud.pk]) })}
+                        aria-label={`Borrar ${tabla.nombre} ${String(f[crud.pk])}`}
+                      >
+                        Borrar
+                      </button>
+                    </td>
+                  )}
                   {tabla.columnas.map((c) => (
                     <Celda key={c.nombre} col={c} v={f[c.nombre]} />
                   ))}
@@ -585,7 +634,7 @@ function VistaTabla({ tabla, lista }: { tabla: TablaExpl; lista: ListaExpl }) {
               ))}
               {!d.filas.length && (
                 <tr>
-                  <td colSpan={tabla.columnas.length} className="nulo">
+                  <td colSpan={tabla.columnas.length + (crud ? 1 : 0)} className="nulo">
                     Ninguna fila cumple los filtros.
                   </td>
                 </tr>
@@ -593,6 +642,16 @@ function VistaTabla({ tabla, lista }: { tabla: TablaExpl; lista: ListaExpl }) {
             </tbody>
           </table>
         </div>
+      )}
+      {crud && accion && (
+        <DialogoCrud
+          key={JSON.stringify(accion)}
+          tabla={tabla}
+          info={crud}
+          accion={accion}
+          onCerrar={() => setAccion(null)}
+          onEscrito={trasEscribir}
+        />
       )}
       <p className="muted" style={{ fontSize: '.8rem', margin: '6px 0 0' }}>
         Clic en una cabecera para ordenar (otra vez: descendente; otra: sin orden). Mayús+clic añade columnas al orden (hasta {MAX_ORDEN}). La clave primaria se añade siempre al
@@ -676,6 +735,15 @@ export function Explorador() {
     retry: false,
   });
 
+  // Tablas con CRUD (fase 5). Si falla, el explorador sigue siendo de solo lectura.
+  const crud = useQuery({
+    queryKey: ['crud'],
+    queryFn: ({ signal }) => getJson<CatalogoCrud>('/api/crud', signal),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const infoCrud = crud.data?.tablas.find((t) => t.nombre === tabla);
+
   if (lista.isPending) return <Cargando />;
   if (lista.isError) return <MensajeError error={lista.error} reintentar={() => lista.refetch()} />;
   const bloques = [...new Set(lista.data.tablas.map((t) => t.bloque))];
@@ -701,7 +769,7 @@ export function Explorador() {
           </select>
         </label>
         <span className="muted" style={{ fontSize: '.8rem' }}>
-          Solo lectura (usuario <code>app_ro</code>) · tablas, columnas y operadores de una lista blanca leída de INFORMATION_SCHEMA · valores siempre como parámetros
+          Lectura con <code>app_ro</code>{crud.data && <> · escritura (CRUD) solo en {crud.data.tablas.map((t) => t.nombre).join(', ')}, con <code>app_rw</code></>} · tablas, columnas y operadores de una lista blanca leída de INFORMATION_SCHEMA · valores siempre como parámetros
         </span>
       </div>
 
@@ -719,7 +787,7 @@ export function Explorador() {
       )}
       {tabla && meta.isPending && <Cargando />}
       {tabla && meta.isError && <MensajeError error={meta.error} />}
-      {tabla && meta.data && <VistaTabla key={tabla} tabla={meta.data} lista={lista.data} />}
+      {tabla && meta.data && <VistaTabla key={tabla} tabla={meta.data} lista={lista.data} crud={infoCrud} />}
     </article>
   );
 }

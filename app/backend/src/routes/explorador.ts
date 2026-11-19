@@ -152,6 +152,16 @@ rutasExplorador.post('/:tabla/plan', async (req, res) => {
   res.json({ filas: r.filas, campos: r.campos, ms: Math.round(r.ms), sql: conValores(sql, plan.valores) });
 });
 
+/** Etiquetas que necesitan otra tabla (SQL fijo, sin datos del navegador salvo el ? de buscar) */
+const ETIQUETA_ESPECIAL: Record<string, { nombre: string; expr: string; buscar: string }> = {
+  ruta: {
+    nombre: 'origen → destino (IATA)',
+    expr: `CONCAT((SELECT a.codigo_iata FROM aeropuerto a WHERE a.id_aeropuerto = ruta.id_aeropuerto_origen), ' → ',
+              (SELECT a.codigo_iata FROM aeropuerto a WHERE a.id_aeropuerto = ruta.id_aeropuerto_destino))`,
+    buscar: `id_aeropuerto_origen IN (SELECT id_aeropuerto FROM aeropuerto WHERE codigo_iata LIKE ? ESCAPE '!')`,
+  },
+};
+
 const consultaFk = z
   .object({
     buscar: z.string().max(50).optional(),
@@ -169,8 +179,15 @@ rutasExplorador.get('/:tabla/fk/:columna', async (req, res) => {
   if (!col?.fk) throw new ErrorPeticion('Parámetros no válidos', [{ campo: 'columna', mensaje: `${columna} no es una clave foránea de ${tabla}` }]);
   const ref = await tablaMeta(col.fk.tabla, signal);
   const pk = mysql.escapeId(col.fk.columna);
-  const textos = ref.etiqueta.filter((e) => ref.columnas.find((c) => c.nombre === e)?.categoria === 'texto');
-  const etiqueta = ref.etiqueta.length ? `CONCAT_WS(' · ', ${ref.etiqueta.map((e) => mysql.escapeId(e)).join(', ')})` : 'NULL';
+  // ruta no tiene columnas de texto propias: se etiqueta (y se busca) por los IATA de origen y destino
+  const especial = ETIQUETA_ESPECIAL[ref.nombre];
+  const textos = especial ? [] : ref.etiqueta.filter((e) => ref.columnas.find((c) => c.nombre === e)?.categoria === 'texto');
+  const etiqueta = especial
+    ? especial.expr
+    : ref.etiqueta.length
+      ? `CONCAT_WS(' · ', ${ref.etiqueta.map((e) => mysql.escapeId(e)).join(', ')})`
+      : 'NULL';
+  const nombresEtiqueta = especial ? [especial.nombre] : ref.etiqueta;
 
   const conds: string[] = [];
   const valores: unknown[] = [];
@@ -187,8 +204,12 @@ rutasExplorador.get('/:tabla/fk/:columna', async (req, res) => {
       conds.push(`${mysql.escapeId(e)} LIKE ? ESCAPE '!'`);
       valores.push(`${escaparLike(b)}%`);
     }
+    if (especial && /^[A-Za-z0-9]{1,3}$/.test(b)) {
+      conds.push(especial.buscar);
+      valores.push(`${escaparLike(b.toUpperCase())}%`);
+    }
     if (!conds.length) {
-      res.json({ tabla: ref.nombre, columna: col.fk.columna, etiqueta: ref.etiqueta, opciones: [], sql: null, ms: 0 });
+      res.json({ tabla: ref.nombre, columna: col.fk.columna, etiqueta: nombresEtiqueta, opciones: [], sql: null, ms: 0 });
       return;
     }
   }
@@ -200,7 +221,7 @@ rutasExplorador.get('/:tabla/fk/:columna', async (req, res) => {
   res.json({
     tabla: ref.nombre,
     columna: col.fk.columna,
-    etiqueta: ref.etiqueta,
+    etiqueta: nombresEtiqueta,
     opciones: r.filas.map((f) => ({ id: f.id, etiqueta: f.etiqueta })),
     sql: conValores(sql, valores),
     ms: Math.round(r.ms),

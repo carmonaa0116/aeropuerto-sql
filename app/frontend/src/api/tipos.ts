@@ -271,6 +271,9 @@ export interface ColumnaExpl {
   origenOpciones: 'enum' | 'check' | null;
   indexada: boolean;
   operadores: OperadorFiltro[];
+  defecto: string | null;
+  auto: boolean;
+  longitud: number | null;
 }
 
 export interface TablaExpl {
@@ -281,7 +284,8 @@ export interface TablaExpl {
   etiqueta: string[];
   filasEstimadas: number | null;
   grande: boolean;
-  indices: { nombre: string; columnas: string[] }[];
+  indices: { nombre: string; columnas: string[]; unico: boolean }[];
+  checks: { nombre: string; condicion: string }[];
   referenciadaPor: { tabla: string; columna: string }[];
 }
 
@@ -349,5 +353,72 @@ export interface RespuestaFk {
   etiqueta: string[];
   opciones: { id: number; etiqueta: string | null }[];
   sql: string | null;
+  ms: number;
+}
+
+// ------------------------------------------------------------------
+// Fase 5: CRUD
+// ------------------------------------------------------------------
+export type ModoEscritura = 'simular' | 'confirmar';
+export type OperacionCrud = 'insertar' | 'actualizar' | 'borrar';
+export type ValorFormulario = string | number | null;
+
+export interface TriggerTabla {
+  nombre: string;
+  momento: string;
+  llama: string[];
+  archivo: string;
+}
+
+export interface TablaCrudInfo {
+  nombre: string;
+  pk: string;
+  editables: { insertar: string[]; actualizar: string[] };
+  obligatorias: string[];
+  triggers: TriggerTabla[];
+  referenciadaPor: { tabla: string; columna: string }[];
+  filasEstimadas: number | null;
+}
+
+export interface CatalogoCrud {
+  tablas: TablaCrudInfo[];
+  usuario: string;
+  rwConfigurado: boolean;
+  copia: { comando: string; restaurar: string };
+}
+
+export interface FilaCrud {
+  tabla: string;
+  id: number;
+  fila: Record<string, unknown>;
+  dependencias: { tabla: string; columna: string; filas: number; masDe: boolean }[];
+  sql: { fila: string; dependencias: string | null };
+  ms: number;
+  confirmacion: string;
+}
+
+export interface ErrorTraducido {
+  errno: number;
+  estadoSql: string | null;
+  mensaje: string;
+  tipo: 'trigger' | 'unique' | 'fk_hijo' | 'fk_padre' | 'check' | 'columna' | 'bloqueo' | 'permiso' | 'otro';
+  explicacion: string;
+  origen: { nombre: string; archivo: string | null; sql: string | null } | null;
+}
+
+export interface ResultadoEscritura {
+  tabla: string;
+  operacion: OperacionCrud;
+  modo: ModoEscritura;
+  resultado: 'ok' | 'error';
+  final: 'COMMIT' | 'ROLLBACK';
+  id: number | null;
+  filasAfectadas: number | null;
+  antes: Record<string, unknown> | null;
+  despues: Record<string, unknown> | null;
+  cambios: { columna: string; antes: unknown; despues: unknown }[];
+  error: ErrorTraducido | null;
+  sql: { texto: string; valores: unknown[]; conValores: string };
+  pasos: { sql: string; ms: number; filas?: number; errno?: number }[];
   ms: number;
 }

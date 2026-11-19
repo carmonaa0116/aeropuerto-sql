@@ -9,6 +9,7 @@ import { Calidad } from './pages/Calidad';
 import { Rendimiento } from './pages/Rendimiento';
 import { Triggers } from './pages/Triggers';
 import { Explorador } from './pages/Explorador';
+import { Crud } from './pages/Crud';
 import { Cargando } from './components/Estado';
 
 // El diagrama ER (React Flow + dagre) se carga solo al entrar en la página
@@ -26,6 +27,7 @@ export function App() {
         <Route path="triggers" element={<Triggers />} />
         <Route path="explorador" element={<Explorador />} />
         <Route path="explorador/:tabla" element={<Explorador />} />
+        <Route path="crud" element={<Crud />} />
         <Route
           path="modelo"
           element={

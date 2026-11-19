@@ -52,3 +52,23 @@ export async function postJson<T>(ruta: string, signal?: AbortSignal, envio?: un
   }
   return cuerpo as T;
 }
+
+/** POST / PATCH / DELETE con cuerpo JSON (escrituras del CRUD) */
+export async function enviarJson<T>(metodo: 'POST' | 'PATCH' | 'DELETE', ruta: string, envio: unknown): Promise<T> {
+  let r: Response;
+  try {
+    r = await fetch(ruta, {
+      method: metodo,
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(envio),
+    });
+  } catch {
+    throw new ErrorApi('No se puede contactar con la API. ¿Está arrancado el backend (npm run dev)?', 0);
+  }
+  const cuerpo = await r.json().catch(() => null);
+  if (!r.ok) {
+    const detalle = Array.isArray(cuerpo?.detalle) ? (cuerpo.detalle as DetalleError[]) : null;
+    throw new ErrorApi(cuerpo?.error ?? `Error HTTP ${r.status}`, r.status, detalle, cuerpo?.codigo ?? null);
+  }
+  return cuerpo as T;
+}
